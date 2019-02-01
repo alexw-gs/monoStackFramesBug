@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace ThrowingStackConsoleApp
@@ -12,6 +13,7 @@ namespace ThrowingStackConsoleApp
             MainAsync().Wait();
         }
 
+        [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
         static async Task MainAsync()
         {
             Console.WriteLine("Starting program");
@@ -25,17 +27,36 @@ namespace ThrowingStackConsoleApp
                 Console.WriteLine($"exception.ToString(): {exception.ToString()}");
 
                 Console.WriteLine("=================================================================================");
-                var stackTrace = new StackTrace(exception, true);
+                var stackTrace = new StackTrace(exception, false);
                 Console.WriteLine($"stackTrace.FrameCount: {stackTrace.FrameCount}");
                 Console.WriteLine("=================================================================================");
+
+                var stackFramesIndividual = new StackFrame[stackTrace.FrameCount];
+                for (int i = 0; i < stackTrace.FrameCount; i++)
+                {
+                    stackFramesIndividual[i] = stackTrace.GetFrame(i);
+                }
+                Console.WriteLine($"stackFramesIndividual.Length: {stackFramesIndividual.Length}");
+                Console.WriteLine("=================================================================================");
+                var stackFrameIndividualString = stackFramesIndividual.Select(f => $"{GetClassName(f)}.{GetMethodName(f)}{Environment.NewLine}").Aggregate((a, b) => $"{a}{b}");
+                Console.WriteLine($"individual stack frames: {stackFrameIndividualString}");
+                Console.WriteLine("=================================================================================");
+
 
                 var stackFrames = stackTrace.GetFrames();
                 Console.WriteLine($"stackFrames.Length: {stackFrames.Length}");
                 Console.WriteLine("=================================================================================");
 
-                var stackFrameString = stackFrames.Select(f => $"{GetClassName(f)}.{GetMethodName(f)}{Environment.NewLine}").Aggregate((a,b) => $"{a}{b}");
-
+                var stackFrameString = stackFrames.Select(f => $"{GetClassName(f)}.{GetMethodName(f)}{Environment.NewLine}").Aggregate((a, b) => $"{a}{b}");
                 Console.WriteLine($"stack frames: {stackFrameString}");
+                Console.WriteLine("=================================================================================");
+                Console.WriteLine("=================================================================================");
+
+
+                
+                Console.WriteLine($"stackTrace.ToString: {stackTrace.ToString()}");
+                Console.WriteLine("=================================================================================");
+
             }
         }
 
